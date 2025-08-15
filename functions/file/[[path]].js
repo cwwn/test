@@ -402,6 +402,15 @@ async function handleR2File(context, fileId, encodedFileName, fileType) {
 async function handleS3File(context, metadata, encodedFileName, fileType) {
     const { Referer, url, request } = context;
 
+    // 检查是否有公共URL，如果有则直接重定向
+    if (metadata?.S3PublicUrl) {
+        const key = metadata?.S3FileKey;
+        // 如果公共URL末尾有/，则去掉
+        const normalizedPublicUrl = metadata.S3PublicUrl.endsWith('/') ? metadata.S3PublicUrl.slice(0, -1) : metadata.S3PublicUrl;
+        const finalUrl = `${normalizedPublicUrl}/${key}`;
+        return Response.redirect(finalUrl, 302);
+    }
+
     const s3Client = new S3Client({
         region: metadata?.S3Region || "auto",
         endpoint: metadata?.S3Endpoint,

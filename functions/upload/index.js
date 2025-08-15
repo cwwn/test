@@ -281,7 +281,7 @@ async function uploadFileToS3(context, fullId, metadata, returnLink) {
         return createResponse('Error: No S3 channel provided', { status: 400 });
     }
 
-    const { endpoint, pathStyle, accessKeyId, secretAccessKey, bucketName, region } = s3Channel;
+    const { endpoint, pathStyle, accessKeyId, secretAccessKey, bucketName, region, publicUrl } = s3Channel;
 
     // 创建 S3 客户端
     const s3Client = new S3Client({
@@ -325,6 +325,10 @@ async function uploadFileToS3(context, fullId, metadata, returnLink) {
             metadata.S3Location = `https://${s3ServerDomain}/${bucketName}/${s3FileName}`; // 采用路径风格的 URL
         } else {
             metadata.S3Location = `https://${bucketName}.${s3ServerDomain}/${s3FileName}`; // 采用虚拟主机风格的 URL
+        }
+        // 新增：保存S3渠道的公共访问URL（CDN域名）
+        if (s3Channel.publicUrl) {
+            metadata.S3PublicUrl = s3Channel.publicUrl;
         }
         metadata.S3Endpoint = endpoint;
         metadata.S3PathStyle = pathStyle;
